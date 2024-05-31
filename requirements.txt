@@ -1,0 +1,9 @@
+dash
+dash-bootstrap-components
+mysql-connector-python
+pandas
+django
+openpyxl
+selenium
+webdriver_manager
+djangorestframework

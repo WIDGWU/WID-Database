@@ -1,0 +1,13 @@
+{
+    "registrar_cols":[
+        "Course Reference Number (CRN)",
+        "Subject Code", "Course Number", "Instructor Email Address",
+        "Course Term Code", "Course", "Section Title", "Section Number", "Schedule Type Desc", "Section Credit Hours", "Max Enrollment", "Variable Credits", "Course Status Desc", "Section Status Desc", "Course College Desc", "Actual Enrollment", "Seats Available",
+        "Instructor Last Name", "Instructor First Name", "Instructor Banner Home Org", "Instructor College Group", "Instructor Department", "Instructor Faculty Status",
+        "Cross List Max", "Cross List Actual", "Course Link Identifier", "Cross List Group"
+    ],
+    "course_leaf_cols":[ "Attribute 1", "Attribute 2", "Attribute 3", "Attribute 4", "Attribute 5", 
+    "Course Number","Course Title","Last Approved Date","Last Edit Date","Long Course Title","Short Course Title","Effective Term","Comments","Reviewer Comments","Status Head",
+    "Course Syllabus Links", "Formerly Known", "Equivalent Courses"
+    ]
+}
