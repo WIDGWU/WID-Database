@@ -1,5 +1,5 @@
 import pandas as pd
-from sql_connection import SQLConnection
+from .sql_connection import SQLConnection
 import numpy as np
 
 class Data_Load():
