@@ -6,7 +6,7 @@ load_dotenv()
 import pandas as pd
 import numpy as np
 
-class SQLConnection:
+class SQLConnection():
     def __init__(self):
         host = os.getenv('host')
         user = os.getenv('user')
@@ -139,14 +139,39 @@ class SQLConnection:
         result = self.cur.fetchone()
         # Check if result is not None
         total_courses = result[0] if result and result[0] is not None else 0
-
         return int(total_courses)
 
+    def get_course_details(self, course_number):
+        headers = ["Course_Number","Course_Title","Last_Approved_Date","Last_Edit_Date","Long_Course_Title","Short_Course_Title",
+                   "Effective_Term","Comments","Reviewer_Comments","Status_Head","University_general_education","CCAS_general_education",
+                   "Honors","Elliott_School_of_International_Affairs","Other"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM Course_Information
+        WHERE Course_Number = %s
+        """
+        self.sql_query(query, (course_number,))
+        result = self.cur.fetchone()
+        result = {k: v for k, v in zip(headers, result)}
+        return result
+    
+    def get_cross_listed_courses(self, crosslist_id):
+        query = """
+        SELECT COURSE_ID
+        FROM Cross_Listed_Course_Details
+        WHERE CrossList_ID = %s
+        """
+        self.sql_query(query, (crosslist_id,))
+        result = self.cur.fetchall()
+        result = [x[0] for x in result]
+        return result
 
 if __name__=="__main__":
     sql = SQLConnection()
-    print(sql.fetch_total_enrollment(2023))
-    print(sql.fetch_total_seats(2023))
-    print(sql.fetch_total_courses(2023))
-    print(sql.fetch_total_sections(2023))
+    # print(sql.fetch_total_enrollment(2023))
+    # print(sql.fetch_total_seats(2023))
+    # print(sql.fetch_total_courses(2023))
+    # print(sql.fetch_total_sections(2023))
+    # print(sql.get_course_details('AH 2132W'))
+    # print(sql.get_cross_listed_courses('201403_GI'))
     sql.close_conn()

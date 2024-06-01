@@ -5,6 +5,7 @@ class WID_Reports():
         self.sql_opertions = SQLConnection()
     
     def fetch_annual_report(self, year):
+        year = int(year)
         # Fetch current year data
         total_seats = self.sql_opertions.fetch_total_seats(year)
         total_enrollment = self.sql_opertions.fetch_total_enrollment(year)
@@ -45,6 +46,7 @@ class WID_Reports():
         }
     
     def fetch_five_year_report(self, year):
+        year = int(year)
         # Initialize dictionaries to store data for the two 5-year periods
         current_period_data = {
             'total_seats': 0,

@@ -6,6 +6,7 @@ from backend_scripts.file_operations import file_ops
 from backend_scripts.reports import WID_Reports
 from backend_scripts.dataLoad import Data_Load
 from backend_scripts.web_crawler_select_course import GWUCourseCrawler
+from backend_scripts.sql_connection import SQLConnection
 from rest_framework.decorators import api_view
 
 def upload_file(request):
@@ -62,5 +63,19 @@ def load_registrar(request):
     data_loader = Data_Load()
     data_loader.load_registerar_data(body['file_path'])
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
+
+@api_view(['POST'])
+def get_course_details(request):
+    body = json.loads(request.body)
+    sql_conn = SQLConnection()
+    result = sql_conn.get_course_details(body['course_number'])
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+@api_view(['POST'])
+def get_cross_listed(request):
+    body = json.loads(request.body)
+    sql_conn = SQLConnection()
+    result = sql_conn.get_cross_listed_courses(body['crosslist_id'])
+    return HttpResponse(json.dumps(result), content_type='application/json')
 
 
