@@ -6,18 +6,16 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 from .dataLoad import Data_Load
+from selenium.webdriver.chrome.options import Options
 
 class GWUCourseCrawler:
     def __init__(self):
+        chrome_options = Options()
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--remote-debugging-port=9222")
-
-        service = Service(ChromeDriverManager().install(), options=chrome_options)
-        self.driver = webdriver.Chrome(service=service)
+        self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.get("http://next.bulletin.gwu.edu/courseadmin")
 
     def close(self):
@@ -48,7 +46,6 @@ class GWUCourseCrawler:
 
     def log_in_page(self):
         if "Web Single Sign-on" in self.driver.page_source:
-            print(self.driver.page_source)
             self._element_by_id_send_keys("username", "G26933631")
             time.sleep(1)
             self._element_by_id_send_keys("password", "GRandAMi123@", True)
