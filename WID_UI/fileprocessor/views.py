@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import UploadFileForm
@@ -8,6 +9,11 @@ from backend_scripts.dataLoad import Data_Load
 from backend_scripts.web_crawler_select_course import GWUCourseCrawler
 from backend_scripts.sql_connection import SQLConnection
 from rest_framework.decorators import api_view
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+import urllib
 
 def upload_file(request):
     file_ops_obj = file_ops()
@@ -38,25 +44,69 @@ def course_leaf_scraper(request):
         return HttpResponse(f"You entered: {user_input}")
     return render(request, 'course_leaf_scraper.html')
 
-@api_view(['POST'])
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='year',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Year for which the report is to be generated',
+        ),
+    ]
+)
+@api_view(['GET'])
 def wid_annual_report(request):
-    body = json.loads(request.body)
-    output = WID_Reports().fetch_annual_report(body['year'])
+    year = urllib.parse.unquote(request.query_params['year'])
+    output = WID_Reports().fetch_annual_report(year)
     return HttpResponse(json.dumps(output), content_type='application/json')
 
-@api_view(['POST'])
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='year',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Year for which the report is to be generated',
+        ),
+    ]
+)
+@api_view(['GET'])
 def wid_5y_report(request):
-    body = json.loads(request.body)
-    output = WID_Reports().fetch_five_year_report(body['year'])
+    year = urllib.parse.unquote(request.query_params['year'])
+    output = WID_Reports().fetch_five_year_report(year)
     return HttpResponse(json.dumps(output), content_type='application/json')
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'course_numbers': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
+        },
+        default={'course_numbers': []}
+    )
+)
 @api_view(['POST'])
 def scrape_course_leaf(request):
     body = json.loads(request.body)
     web_scraper = GWUCourseCrawler()
-    web_scraper.get_selected_courses(body['Course_Numbers'])
+    web_scraper.get_selected_courses(body['course_numbers'])
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB for given Course Numbers."}), content_type='application/json')
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        default={'file_path': 'uploaded_files/WID courses Fall 2014-Spr 2024 all fields REGISTRAR.xlsx'}
+    )
+)
 @api_view(['POST'])
 def load_registrar(request):
     body = json.loads(request.body)
@@ -64,18 +114,42 @@ def load_registrar(request):
     data_loader.load_registerar_data(body['file_path'])
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
 
-@api_view(['POST'])
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='course_number',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Course number of the course',
+        ),
+    ]
+)
+@api_view(['GET'])
 def get_course_details(request):
-    body = json.loads(request.body)
+    course_number = urllib.parse.unquote(request.query_params['course_number'])
     sql_conn = SQLConnection()
-    result = sql_conn.get_course_details(body['course_number'])
+    result = sql_conn.get_course_details(course_number)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
-@api_view(['POST'])
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='crosslist_id',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Crosslist ID of the course',
+        ),
+    ]
+)
+@api_view(['GET'])
 def get_cross_listed(request):
-    body = json.loads(request.body)
+    crosslist_id = urllib.parse.unquote(request.query_params['crosslist_id'])
     sql_conn = SQLConnection()
-    result = sql_conn.get_cross_listed_courses(body['crosslist_id'])
+    result = sql_conn.get_cross_listed_courses(crosslist_id)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 
