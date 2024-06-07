@@ -1,18 +1,22 @@
 from sqlalchemy import create_engine
 import pymysql
 import os
-from dotenv import load_dotenv
-load_dotenv()
+import json
 import pandas as pd
 import numpy as np
 
 class SQLConnection():
     def __init__(self):
-        host = os.getenv('host')
-        user = os.getenv('user')
-        password = os.getenv('password')
-        port = int(os.getenv('port'))
-        db = os.getenv('database')
+        try:
+            with open('/home/ubuntu/WID_Project/secrets.json') as secrets_file:
+                secrets = json.load(secrets_file)
+        except:
+            raise Exception("Secrets file not found.")
+        host = secrets['host']
+        user = secrets['user']
+        password = secrets['password']
+        port = int(secrets['port'])
+        db = secrets['database']
         self.engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:{port}/{db}')
         self.conn = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db)
         self.cur = self.conn.cursor()
