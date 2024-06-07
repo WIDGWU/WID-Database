@@ -23,9 +23,20 @@ class SQLConnection():
         else:
             return self.cur.execute(query, params)
 
-    def df_to_sql(self, df, table_name):
-        self.sql_query(f"SELECT 1 FROM {table_name} LIMIT 1;")
-        df.to_sql(table_name, con=self.engine, if_exists='append', index=False)
+    def df_to_sql(self, df, table_name, delete_records=False, deletion_col=None):
+        if delete_records:
+            self.delete_records(df, deletion_col, table_name)
+        self.upsert_df(df, table_name)
+
+    def delete_records(self, df, deletion_col, table_name):
+        # Step 1: Extract unique values from the specified deletion column and format them for SQL
+        unique_values = list(df[deletion_col].astype(str).unique())
+        formatted_values = ', '.join([f"'{value}'" for value in unique_values])
+
+        # Step 2: Construct and execute the deletion query using the dynamic column name
+        deletion_query = f"DELETE FROM {table_name} WHERE {deletion_col} IN ({formatted_values});"
+        self.sql_query(deletion_query)
+
 
     def upsert_df(self, df, table_name):
         """
@@ -141,6 +152,21 @@ class SQLConnection():
         total_courses = result[0] if result and result[0] is not None else 0
         return int(total_courses)
 
+    def get_courseleaf_tracker_details(self, course_number):
+        headers = ["Course_Number", "CIM_Email_Date", "Course_Title", "Request_Type", "Status", "WID_Director_Approval_Date", "WID_approval_process_notes", "Faculty_Name", "Faculty_Email", "Semester_Approved", "Syllabus_in_Drive", "Proposal_form_in_Drive", "Home_Dept", "Dept_Admin", "Dept_Admin_Email", "Cross_listed", "Academic_Year", "WID_Director"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM Courseleaf_Tracker
+        WHERE Course_Number = %s
+        """
+        self.sql_query(query, (course_number,))
+        result = self.cur.fetchone()
+        if result is None:
+            return {}
+        result = {k: v for k, v in zip(headers, result)}
+        return result
+
+
     def get_course_details(self, course_number):
         headers = ["Course_Number","Course_Title","Last_Approved_Date","Last_Edit_Date","Long_Course_Title","Short_Course_Title",
                    "Effective_Term","Comments","Reviewer_Comments","Status_Head","University_general_education","CCAS_general_education",
@@ -153,6 +179,9 @@ class SQLConnection():
         self.sql_query(query, (course_number,))
         result = self.cur.fetchone()
         result = {k: v for k, v in zip(headers, result)}
+        result['Similar_Courses'] = self.get_similar_courses(course_number)
+        result['Syllabus'] = self.get_syllabus(course_number)
+        result['Courseleaf_Tracker'] = self.get_courseleaf_tracker_details(course_number)
         return result
     
     def get_cross_listed_courses(self, crosslist_id):
@@ -165,6 +194,90 @@ class SQLConnection():
         result = self.cur.fetchall()
         result = [x[0] for x in result]
         return result
+    
+    def get_similar_courses(self, course_number):
+        query = """
+        SELECT Similar_Course_Number, Similarity_Type
+        FROM Similar_Course_Details
+        WHERE Course_Number = %s
+        """
+        self.sql_query(query, (course_number,))
+        result = self.cur.fetchall()
+        if len(result) == 0:
+            return []
+        result = [list(x) for x in result]
+        return result
+    
+    def get_syllabus(self, course_number):
+        query = """
+        SELECT Course_Syllabus_Links
+        FROM Course_Syllabus
+        WHERE Course_Number = %s
+        """
+        self.sql_query(query, (course_number,))
+        result = self.cur.fetchall()
+        if len(result) == 0:
+            return []
+        result = [x[0] for x in result]
+        return result
+    
+    def get_instrctor_details(self, netid):
+        headers = ["Instructor_netid", "Instructor_Last_Name", "Instructor_First_Name", "Instructor_Banner_Home_Org", "Instructor_College_Group", "Instructor_Department", "Instructor_Email_Address", "Instructor_Faculty_Status"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM Instructor_Details
+        WHERE Instructor_netid = %s
+        """
+        self.sql_query(query, (netid,))
+        result = self.cur.fetchone()
+        if result is None:
+            return {}
+        result = {k: v for k, v in zip(headers, result)}
+        return result
+
+    def get_section_details(self, course_id):
+        headers = ["COURSE_ID", "Course_Term_Code", "Course_Number", "CRN", "Course", "Section_Title", "Section_Number", "Schedule_Type_Desc", "Section_Credit_Hours", "Max_Enrollment", "Instructor_netid", "Variable_Credits", "Course_Status_Desc", "Section_Status_Desc", "Course_College_Desc", "Actual_Enrollment", "Seats_Available", "CrossList_ID", "Cross_List_Max", "Cross_List_Actual", "Course_Link_Identifier"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM Course_Section_Information
+        WHERE COURSE_ID = %s
+        """
+        self.sql_query(query, (course_id,))
+        result = self.cur.fetchone()
+        result = {k: v for k, v in zip(headers, result)}
+        result['CrossListed_Courses'] = self.get_cross_listed_courses(result['CrossList_ID'])
+        result['Instructor_Details'] = self.get_instrctor_details(result['Instructor_netid'])
+        result['GA_Details'] = self.get_GA_details(course_id)
+        return result
+    
+    def get_GA_info(self, netid):
+        headers = ["GA_First_Name", "GA_Last_Name", "GA_Net_ID"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM GA_Details
+        WHERE GA_Net_ID = %s
+        """
+        self.sql_query(query, (netid,))
+        result = self.cur.fetchone()
+        result = {k: v for k, v in zip(headers, result)}
+        return result
+    
+    def get_GA_details(self, course_id):
+        headers = ["COURSE_ID", "Course_Term_Code", "CRN", "GA_Type", "GA_Net_ID", "Home_School", "Home_Dept", "Hour_Assignment"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM GA_Registration
+        WHERE COURSE_ID = %s
+        """
+        self.sql_query(query, (course_id,))
+        result = self.cur.fetchone()
+        print(result)
+        if result is None:
+            return {}
+        result = {k: v for k, v in zip(headers, result)}
+        GA_deatils = self.get_GA_info(result['GA_Net_ID'])
+        GA_deatils.update(result)
+        return GA_deatils
 
 if __name__=="__main__":
     sql = SQLConnection()
@@ -174,4 +287,9 @@ if __name__=="__main__":
     # print(sql.fetch_total_sections(2023))
     # print(sql.get_course_details('AH 2132W'))
     # print(sql.get_cross_listed_courses('201403_GI'))
+    # df = pd.read_csv('/Users/amitshendge/Downloads/Writing In Decipline Sheets/web crawler/acourse_leaf_data.csv')
+    # print(df[['Equivalent Courses','Formerly Known']])
+    # print(df.columns)
+    # sql.delete_records(df, 'Course Number', 'Similar_Course_Details')
+    print(sql.get_section_details('201403_82243'))
     sql.close_conn()

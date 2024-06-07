@@ -52,7 +52,7 @@ def course_leaf_scraper(request):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_STRING,
             required=True,
-            description='Year for which the report is to be generated',
+            description='Year for which the report is to be generated. Ex: 2022',
         ),
     ]
 )
@@ -70,7 +70,7 @@ def wid_annual_report(request):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_STRING,
             required=True,
-            description='Year for which the report is to be generated',
+            description='Year for which the report is to be generated. Ex: 2022',
         ),
     ]
 )
@@ -87,7 +87,8 @@ def wid_5y_report(request):
         properties={
             'course_numbers': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
         },
-        default={'course_numbers': []}
+        default={'course_numbers': ["AH 2001W","AH 2109W"]},
+        required=['course_numbers'],
     )
 )
 @api_view(['POST'])
@@ -104,7 +105,8 @@ def scrape_course_leaf(request):
         properties={
             'file_path': openapi.Schema(type=openapi.TYPE_STRING),
         },
-        default={'file_path': 'uploaded_files/WID courses Fall 2014-Spr 2024 all fields REGISTRAR.xlsx'}
+        default={'file_path': 'uploaded_files/WID courses Fall 2014-Spr 2024 all fields REGISTRAR.xlsx'},
+        required=['file_path'],
     )
 )
 @api_view(['POST'])
@@ -122,7 +124,7 @@ def load_registrar(request):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_STRING,
             required=True,
-            description='Course number of the course',
+            description='Course number of the course. Ex: AH 2001W',
         ),
     ]
 )
@@ -137,11 +139,31 @@ def get_course_details(request):
     method='get',
     manual_parameters=[
         openapi.Parameter(
+            name='course_id',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Course ID of the section. Ex: 201403_82243',
+        ),
+    ]
+)
+@api_view(['GET'])
+def get_section_details(request):
+    course_id = urllib.parse.unquote(request.query_params['course_id'])
+    sql_conn = SQLConnection()
+    result = sql_conn.get_section_details(course_id)
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
             name='crosslist_id',
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_STRING,
             required=True,
-            description='Crosslist ID of the course',
+            description='Crosslist ID of the course. Ex: 201403_GI',
         ),
     ]
 )
@@ -152,4 +174,21 @@ def get_cross_listed(request):
     result = sql_conn.get_cross_listed_courses(crosslist_id)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
-
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='course_number',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Course number of the course. Ex: AH 2001W',
+        ),
+    ]
+)
+@api_view(['GET'])
+def internal_tracker(request):
+    course_number = urllib.parse.unquote(request.query_params['course_number'])
+    sql_conn = SQLConnection()
+    result = sql_conn.get_courseleaf_tracker_details(course_number)
+    return HttpResponse(json.dumps(result), content_type='application/json')

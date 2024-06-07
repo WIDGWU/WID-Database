@@ -34,12 +34,14 @@ class Data_Load():
 
     def extract_similar_course_details(self, input_df, output_df, static_column):
         for i in input_df.iterrows():
-            if pd.notna(i[1]['Formerly Known']):
-                for k in i[1]['Formerly Known'].split('/'):
-                    output_df.loc[len(output_df)] = [i[1][static_column], k.strip(), 'Formerly Known']
-            if pd.notna(i[1]['Equivalent Courses']):
-                for k in i[1]['Equivalent Courses'].split('\n'):
-                    output_df.loc[len(output_df)] = [i[1][static_column], k.split('-')[0].strip(), 'Equivalent Course']
+            if i[1]['Formerly Known']:
+                if pd.notna(i[1]['Formerly Known']):
+                    for k in i[1]['Formerly Known'].split('/'):
+                        output_df.loc[len(output_df)] = [i[1][static_column], k.strip(), 'Formerly Known']
+            if i[1]['Equivalent Courses']:
+                if pd.notna(i[1]['Equivalent Courses']):
+                    for k in i[1]['Equivalent Courses'].split('\n'):
+                        output_df.loc[len(output_df)] = [i[1][static_column], k.split('-')[0].strip(), 'Equivalent Course']
 
     def load_course_leaf(self, data):
         df = self.read_data(data)
@@ -57,10 +59,10 @@ class Data_Load():
         self.new_column_names(Course_Information_df)
         self.new_column_names(Course_Syllabus_df)
         self.new_column_names(Similar_Course_Details_df)
-
+        
         self.sql_opertions.upsert_df(Course_Information_df, 'Course_Information')
-        self.sql_opertions.upsert_df(Course_Syllabus_df, 'Course_Syllabus')
-        self.sql_opertions.upsert_df(Similar_Course_Details_df, 'Similar_Course_Details')
+        self.sql_opertions.df_to_sql(df=Course_Syllabus_df, table_name='Course_Syllabus',delete_records=True,deletion_col='Course_Number')
+        self.sql_opertions.df_to_sql(df=Similar_Course_Details_df, table_name='Similar_Course_Details', delete_records=True, deletion_col='Course_Number')
         self.sql_opertions.close_conn()
         print("Data loaded successfully")
 
@@ -100,8 +102,8 @@ class Data_Load():
         df.dropna(subset='CRN',inplace=True)
         df['COURSE_ID'] = df['Course Term Code'].astype(str) + '_' + df['CRN'].astype(str)
         self.new_column_names(df)
-        self.sql_opertions.upsert_df(df[['COURSE_ID', 'Course_Term_Code', 'CRN', 'GA_Type',
-       'GA_Net_ID', 'Home_School', 'Home_Dept', 'Hour_Assignment']], 'GA_Registration')
+        self.sql_opertions.df_to_sql(df=df[['COURSE_ID', 'Course_Term_Code', 'CRN', 'GA_Type',
+       'GA_Net_ID', 'Home_School', 'Home_Dept', 'Hour_Assignment']], table_name='GA_Registration', delete_records=True, deletion_col='COURSE_ID')
         
         self.sql_opertions.upsert_df(df[['GA_Net_ID', 'GA_Last_Name', 'GA_First_Name']].drop_duplicates().dropna(subset='GA_Net_ID'), 'GA_Details')
         self.sql_opertions.close_conn()
