@@ -42,7 +42,7 @@ urlpatterns = [
     path('get_course_details/', views.get_course_details, name='get_course_details'),
     path('get_cross_listed/', views.get_cross_listed, name='get_cross_listed'),
     path('get_section_details/', views.get_section_details, name='get_section_details'),
-    path('run_shello/', views.run_shell_command, name='run_shell_command'),
+    path('run_shell/', views.run_shell_command, name='run_shell_command'),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
