@@ -196,6 +196,5 @@ def internal_tracker(request):
 @api_view(['GET'])
 def run_shell_command(request):
     import subprocess
-    process = subprocess.Popen('sh /home/ubuntu/refresh_project.sh', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    output, error = process.communicate()
-    return output, error
+    process = subprocess.Popen('sh /home/ubuntu/refresh_project.sh', shell=True)
+    return HttpResponse(json.dumps({"Body":"Shell script executed successfully."}), content_type='application/json')
