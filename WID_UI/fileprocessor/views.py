@@ -192,3 +192,10 @@ def internal_tracker(request):
     sql_conn = SQLConnection()
     result = sql_conn.get_courseleaf_tracker_details(course_number)
     return HttpResponse(json.dumps(result), content_type='application/json')
+
+@api_view(['GET'])
+def run_shell_command():
+    import subprocess
+    process = subprocess.Popen('sh /home/ubuntu/refresh_project.sh', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output, error = process.communicate()
+    return output, error
