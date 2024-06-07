@@ -7,6 +7,7 @@ import time
 import pandas as pd
 from .dataLoad import Data_Load
 from selenium.webdriver.chrome.options import Options
+import json
 
 class GWUCourseCrawler:
     def __init__(self):
@@ -45,10 +46,15 @@ class GWUCourseCrawler:
         return '\n'.join(self._element_by_xpath_click(xpath).find_element(By.XPATH,'..').find_element(By.XPATH,'..').text.split("\n")[1:]).strip()
 
     def log_in_page(self):
+        try:
+            with open('/home/ubuntu/WID_Project/secrets.json') as secrets_file:
+                secrets = json.load(secrets_file)
+        except:
+            raise Exception("Secrets file not found.")
         if "Web Single Sign-on" in self.driver.page_source:
-            self._element_by_id_send_keys("username", "G26933631")
+            self._element_by_id_send_keys("username", secrets['course_leaf_username'])
             time.sleep(1)
-            self._element_by_id_send_keys("password", "GRandAMi123@", True)
+            self._element_by_id_send_keys("password", secrets['course_leaf_password'], True)
 
     def accept_terms(self):
         if "The George Washington University Web Single Signon Terms of Use" in self.driver.page_source:
