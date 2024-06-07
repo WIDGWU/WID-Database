@@ -193,8 +193,30 @@ def internal_tracker(request):
     result = sql_conn.get_courseleaf_tracker_details(course_number)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
+@swagger_auto_schema(
+    method='get',
+)
 @api_view(['GET'])
 def run_shell_command(request):
     import subprocess
     process = subprocess.Popen('sh /home/ubuntu/WID_Project/refresh_project.sh', shell=True)
     return HttpResponse(json.dumps({"Body":"Shell script executed successfully."}), content_type='application/json')
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'secrets': openapi.Schema(type=openapi.TYPE_OBJECT),
+        },
+        default={'secrets': {'host': 'xxx', 'port': '3306', 'database': 'WID', 'user': 'xxx', 'password': 'xxx'}},
+        required=['secrets'],
+    )
+)
+@api_view(['POST'])
+def set_secrets(request):
+    body = json.loads(request.body)
+    with open('/home/ubuntu/WID_Project/secrets.json', 'w') as f:
+        json.dump(body, f)
+    return HttpResponse(json.dumps({"Body":"Secrets saved successfully."}), content_type='application/json')
+
