@@ -209,7 +209,7 @@ def run_shell_command(request):
         properties={
             'secrets': openapi.Schema(type=openapi.TYPE_OBJECT),
         },
-        default={'secrets': {'host': 'xxx', 'port': '3306', 'database': 'WID', 'user': 'xxx', 'password': 'xxx'}},
+        default={'host': 'xxx', 'port': '3306', 'database': 'WID', 'user': 'xxx', 'password': 'xxx'},
         required=['secrets'],
     )
 )
