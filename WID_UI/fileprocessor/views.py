@@ -45,6 +45,7 @@ def course_leaf_scraper(request):
     return render(request, 'course_leaf_scraper.html')
 
 @swagger_auto_schema(
+    tags=['Reports'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -63,6 +64,7 @@ def wid_annual_report(request):
     return HttpResponse(json.dumps(output), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Reports'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -81,6 +83,7 @@ def wid_5y_report(request):
     return HttpResponse(json.dumps(output), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Data Load'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -99,6 +102,7 @@ def scrape_course_leaf(request):
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB for given Course Numbers."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Data Load'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -117,6 +121,7 @@ def load_registrar(request):
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Get Data'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -136,6 +141,7 @@ def get_course_details(request):
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Get Data'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -156,6 +162,7 @@ def get_section_details(request):
 
 
 @swagger_auto_schema(
+    tags=['Get Data'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -175,6 +182,7 @@ def get_cross_listed(request):
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Get Data'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -187,13 +195,14 @@ def get_cross_listed(request):
     ]
 )
 @api_view(['GET'])
-def internal_tracker(request):
+def get_internal_tracker(request):
     course_number = urllib.parse.unquote(request.query_params['course_number'])
     sql_conn = SQLConnection()
     result = sql_conn.get_courseleaf_tracker_details(course_number)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Server Operations'],
     method='get',
 )
 @api_view(['GET'])
@@ -203,6 +212,7 @@ def run_shell_command(request):
     return HttpResponse(json.dumps({"Body":"Shell script executed successfully."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Server Operations'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -221,6 +231,7 @@ def set_secrets(request):
     return HttpResponse(json.dumps({"Body":"Secrets saved successfully."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Update Data'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -247,6 +258,7 @@ def update_record(request):
     return HttpResponse(json.dumps("Record Updated Sucessfully"), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Get Data'],
     method='get',
     manual_parameters=[
         openapi.Parameter(
@@ -280,6 +292,7 @@ def get_GA_history(request):
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Data Load'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -298,6 +311,7 @@ def load_ga_registration(request):
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Data Load'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -316,6 +330,7 @@ def load_pwp_registration(request):
     return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
 
 @swagger_auto_schema(
+    tags=['Data Load'],
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,

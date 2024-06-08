@@ -46,6 +46,7 @@ urlpatterns = [
     path('set_secrets/', views.set_secrets, name='set_secrets'),
     path('update_record/', views.update_record, name='update_record'),
     path('get_GA_history/', views.get_GA_history, name='get_GA_history'),
+    path('get_internal_tracker/', views.get_internal_tracker, name='get_internal_tracker'),
     path('load_ga_registration/', views.load_ga_registration, name='load_ga_registration'),
     path('load_pwp_registration/', views.load_pwp_registration, name='load_pwp_registration'),
     path('load_courseleaf_tracker/', views.load_courseleaf_tracker, name='load_courseleaf_tracker'),
