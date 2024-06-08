@@ -24,8 +24,8 @@ CREATE TABLE Instructor_Details (
 
 
 CREATE TABLE Cross_Listed_Course_Details (
+    COURSE_ID VARCHAR(255) PRIMARY KEY,
     CrossList_ID VARCHAR(255),
-    COURSE_ID VARCHAR(255),
     Cross_List_Group VARCHAR(255)
 );
 
@@ -102,7 +102,7 @@ CREATE TABLE GA_Registration (
 
 -- Table `PWP_Registration`
 CREATE TABLE PWP_Registration (
-    COURSE_ID VARCHAR(255),
+    COURSE_ID VARCHAR(255) PRIMARY KEY,
     Course_Term_Code VARCHAR(255),
     CRN VARCHAR(255),
     PWP_Hours VARCHAR(255)
@@ -110,7 +110,7 @@ CREATE TABLE PWP_Registration (
 
 -- Table `Courseleaf_Tracker`
 CREATE TABLE Courseleaf_Tracker (
-    Course_Number VARCHAR(255),
+    Course_Number VARCHAR(255) PRIMARY KEY,
     CIM_Email_Date VARCHAR(255),
     Course_Title VARCHAR(255),
     Request_Type VARCHAR(255),
@@ -129,3 +129,5 @@ CREATE TABLE Courseleaf_Tracker (
     Academic_Year VARCHAR(255),
     WID_Director VARCHAR(255)
 );
+
+

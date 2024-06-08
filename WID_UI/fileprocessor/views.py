@@ -278,3 +278,57 @@ def get_GA_history(request):
     sql_conn = SQLConnection()
     result = sql_conn.get_GA_history(ga_netid=ga_netid, name=name)
     return HttpResponse(json.dumps(result), content_type='application/json')
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        default={'file_path': 'WID_UI/uploaded_files/Copy of WID GA Database Upload Spreadsheet.xlsx'},
+        required=['file_path'],
+    )
+)
+@api_view(['POST'])
+def load_ga_registration(request):
+    body = json.loads(request.body)
+    data_loader = Data_Load()
+    data_loader.load_GA_data(body['file_path'])
+    return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        default={'file_path': 'WID_UI/uploaded_files/Copy of PWP Database Upload Spreadsheet.xlsx'},
+        required=['file_path'],
+    )
+)
+@api_view(['POST'])
+def load_pwp_registration(request):
+    body = json.loads(request.body)
+    data_loader = Data_Load()
+    data_loader.load_PWP_data(body['file_path'])
+    return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        default={'file_path': 'WID_UI/uploaded_files/Copy of  CourseLeaf TRACKER.xlsx'},
+        required=['file_path'],
+    )
+)
+@api_view(['POST'])
+def load_courseleaf_tracker(request):
+    body = json.loads(request.body)
+    data_loader = Data_Load()
+    data_loader.load_courseleaf_tracker(body['file_path'])
+    return HttpResponse(json.dumps({"Body":"Data Loaded Successfully in DB."}), content_type='application/json')

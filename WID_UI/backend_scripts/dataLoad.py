@@ -61,8 +61,10 @@ class Data_Load():
         self.new_column_names(Similar_Course_Details_df)
         
         self.sql_opertions.upsert_df(Course_Information_df, 'Course_Information')
-        self.sql_opertions.df_to_sql(df=Course_Syllabus_df, table_name='Course_Syllabus',delete_records=True,deletion_col='Course_Number')
-        self.sql_opertions.df_to_sql(df=Similar_Course_Details_df, table_name='Similar_Course_Details', delete_records=True, deletion_col='Course_Number')
+        if not Course_Syllabus_df.empty:
+            self.sql_opertions.df_to_sql(df=Course_Syllabus_df, table_name='Course_Syllabus',delete_records=True,deletion_col='Course_Number')
+        if not Similar_Course_Details_df.empty:
+            self.sql_opertions.df_to_sql(df=Similar_Course_Details_df, table_name='Similar_Course_Details', delete_records=True, deletion_col='Course_Number')
         self.sql_opertions.close_conn()
         print("Data loaded successfully")
 
