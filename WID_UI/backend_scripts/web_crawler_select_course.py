@@ -50,7 +50,11 @@ class GWUCourseCrawler:
             with open('/home/ubuntu/WID_Project/secrets.json') as secrets_file:
                 secrets = json.load(secrets_file)
         except:
-            raise Exception("Secrets file not found.")
+            try:
+                with open('WID_UI/local_secrets.json') as secrets_file:
+                    secrets = json.load(secrets_file)
+            except: 
+                raise Exception("Secrets file not found.")
         if "Web Single Sign-on" in self.driver.page_source:
             self._element_by_id_send_keys("username", secrets['course_leaf_username'])
             time.sleep(1)

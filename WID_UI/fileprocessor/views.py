@@ -209,7 +209,7 @@ def run_shell_command(request):
         properties={
             'secrets': openapi.Schema(type=openapi.TYPE_OBJECT),
         },
-        default={'host': 'xxx', 'port': '3306', 'database': 'WID', 'user': 'xxx', 'password': 'xxx', 'course_leaf_username':'xxx', 'course_leaf_password':'xxx'},
+        default={'host': 'xx', 'port': '3306', 'database': 'WID', 'user': 'xx', 'password': 'xx', 'course_leaf_username':'xx', 'course_leaf_password':'xx'},
         required=['secrets'],
     )
 )
@@ -220,3 +220,61 @@ def set_secrets(request):
         json.dump(body, f)
     return HttpResponse(json.dumps({"Body":"Secrets saved successfully."}), content_type='application/json')
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'table_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'primary_column': openapi.Schema(type=openapi.TYPE_STRING),
+            'primary_value': openapi.Schema(type=openapi.TYPE_STRING),
+            'change_field': openapi.Schema(type=openapi.TYPE_STRING),
+            'changed_value': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        default={'table_name': 'Course_Information', 'primary_column': 'Course_Number', 'primary_value': 'AH 2001W', 'change_field': 'Course_Title', 'changed_value': 'New Updated Course Title'},
+        required=['table_name', 'primary_column', 'primary_value', 'change_field', 'changed_value'],
+    )
+)
+@api_view(['POST'])
+def update_record(request):
+    try:
+        body = json.loads(request.body)
+        table_name, primary_column, primary_value, change_field, changed_value = body['table_name'], body['primary_column'], body['primary_value'], body['change_field'], body['changed_value']
+        sql_conn = SQLConnection()
+        sql_conn.update_record(table_name, primary_column, primary_value, change_field, changed_value)
+    except Exception as e:
+        return HttpResponse(json.dumps({"Error":str(e), "Error_details":str(e.with_traceback)}), content_type='application/json')
+    return HttpResponse(json.dumps("Record Updated Sucessfully"), content_type='application/json')
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter(
+            name='ga_netid',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=False,
+            description='GA NetID of the GA. Ex: abc123',
+        ),
+        openapi.Parameter(
+            name='name',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=False,
+            description='Name of the GA. Ex: John Doe',
+        ),
+    ]
+)
+@api_view(['GET'])
+def get_GA_history(request):
+    try:
+        ga_netid = urllib.parse.unquote(request.query_params['ga_netid'])
+    except:
+        ga_netid = ""
+    try:
+        name = urllib.parse.unquote(request.query_params['name'])
+    except:
+        name = ""
+    sql_conn = SQLConnection()
+    result = sql_conn.get_GA_history(ga_netid=ga_netid, name=name)
+    return HttpResponse(json.dumps(result), content_type='application/json')

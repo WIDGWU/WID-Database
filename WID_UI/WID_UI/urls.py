@@ -44,6 +44,8 @@ urlpatterns = [
     path('get_section_details/', views.get_section_details, name='get_section_details'),
     path('restart_server/', views.run_shell_command, name='run_shell_command'),
     path('set_secrets/', views.set_secrets, name='set_secrets'),
+    path('update_record/', views.update_record, name='update_record'),
+    path('get_GA_history/', views.get_GA_history, name='get_GA_history'),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

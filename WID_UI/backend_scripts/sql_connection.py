@@ -11,7 +11,11 @@ class SQLConnection():
             with open('/home/ubuntu/WID_Project/secrets.json') as secrets_file:
                 secrets = json.load(secrets_file)
         except:
-            raise Exception("Secrets file not found.")
+            try:
+                with open('WID_UI/local_secrets.json') as secrets_file:
+                    secrets = json.load(secrets_file)
+            except: 
+                raise Exception("Secrets file not found.")
         host = secrets['host']
         user = secrets['user']
         password = secrets['password']
@@ -252,6 +256,7 @@ class SQLConnection():
         result['CrossListed_Courses'] = self.get_cross_listed_courses(result['CrossList_ID'])
         result['Instructor_Details'] = self.get_instrctor_details(result['Instructor_netid'])
         result['GA_Details'] = self.get_GA_details(course_id)
+        result['PWP_Details'] = self.get_PWP_info(course_id)
         return result
     
     def get_GA_info(self, netid):
@@ -282,7 +287,64 @@ class SQLConnection():
         GA_deatils = self.get_GA_info(result['GA_Net_ID'])
         GA_deatils.update(result)
         return GA_deatils
+    
+    def update_record(self, table_name, primary_column, primary_value, change_field, changed_value):
+        query = f"""
+        UPDATE {table_name}
+        SET {change_field} = %s
+        WHERE {primary_column} = %s
+        """
+        self.sql_query(query, (changed_value, primary_value))
+        self.conn.commit()
 
+    def get_GA_history(self, ga_netid="", name=""):
+        headers = ["COURSE_ID", "GA_Net_ID", "Course_Term_Code", "CRN", "GA_Type", "Home_School", "Home_Dept", "Hour_Assignment"]
+        if ga_netid:
+            query = f"""
+            SELECT {','.join(headers)}
+            FROM GA_Registration
+            WHERE GA_Net_ID = %s
+            """
+            print(query)
+            self.sql_query(query, (ga_netid,))
+        elif name:
+            name = f"%{name}%"
+            query = f"""
+            SELECT {','.join(headers)}
+            FROM GA_Registration
+            WHERE GA_Net_ID IN (SELECT GA_Net_ID
+                FROM GA_Details 
+                WHERE CONCAT(GA_First_Name, ' ', GA_Last_Name) LIKE %s OR 
+                    CONCAT(GA_Last_Name, ' ', GA_First_Name) LIKE %s)
+            """
+            print(query)
+            self.sql_query(query, (name, name))
+        result = self.cur.fetchall()
+        result = [{k: v for k, v in zip(headers, x)} for x in result]
+        for i in range(len(result)):
+            GA_deatils = self.get_GA_info(result[i]['GA_Net_ID'])
+            GA_deatils.update(result[i])
+            result[i] = GA_deatils
+        return result
+    
+    def get_PWP_info(self, course_id):
+        headers = ["PWP_Hours"]
+        query = f"""
+        SELECT {','.join(headers)}
+        FROM PWP_Registration
+        WHERE COURSE_ID = %s
+        """
+        self.sql_query(query, (course_id,))
+        result = self.cur.fetchone()
+        if result is None:
+            return {}
+        result = {k: v for k, v in zip(headers, result)}
+        result_set = {}
+        result_set['PWP_Assigned'] = True
+        result_set.update(result)
+        return result_set
+
+        
 if __name__=="__main__":
     sql = SQLConnection()
     # print(sql.fetch_total_enrollment(2023))
@@ -295,5 +357,7 @@ if __name__=="__main__":
     # print(df[['Equivalent Courses','Formerly Known']])
     # print(df.columns)
     # sql.delete_records(df, 'Course Number', 'Similar_Course_Details')
-    print(sql.get_section_details('201403_82243'))
+    # print(sql.get_section_details('201403_82243'))
+    # sql.update_record('Course_Information', 'Course_Number', 'AH 2001W', 'Course_Title', 'Short Course Title')
+    print(sql.get_GA_history(name='Alice'))
     sql.close_conn()
