@@ -190,7 +190,7 @@ def get_cross_listed(request):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_STRING,
             required=True,
-            description='Course number of the course. Ex: AH 2001W',
+            description='Course number of the course. Ex: HIST 3364W',
         ),
     ]
 )
